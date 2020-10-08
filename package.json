@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "Sub project of icons-font-customization, a collection of over 33,000 high-quality free svg icons and tools for generating customized icon font. All icons are completely free for personal or business requirements.",
   "main": "src/index.js",
+  "preferGlobal": true,
   "bin": {
     "icons-font-command": "./bin/cli.js"
   },
   "scripts": {
     "maintain": "node ./bin/cli.js --maintain",
-    "generate-font": "node ./bin/cli.js",
+    "generate-font": "node ./bin/cli",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
