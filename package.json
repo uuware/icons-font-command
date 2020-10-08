@@ -15,6 +15,7 @@
     "type": "git",
     "url": "git+https://github.com/uuware/icons-font-command.git"
   },
+  "publishConfig": { "registry": "https://npm.pkg.github.com/" },
   "dependencies": {
     "svg2ttf": "^5.0.0",
     "svgicons2svgfont": "^9.1.1",
