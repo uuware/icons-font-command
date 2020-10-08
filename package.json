@@ -1,0 +1,42 @@
+{
+  "name": "icons-font-command",
+  "version": "1.0.0",
+  "description": "Sub project of icons-font-customization, a collection of over 33,000 high-quality free svg icons and tools for generating customized icon font. All icons are completely free for personal or business requirements.",
+  "main": "src/index.js",
+  "bin": {
+    "icons-font-command": "./bin/cli.js"
+  },
+  "scripts": {
+    "maintain": "node ./bin/cli.js --maintain",
+    "generate-font": "node ./bin/cli.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uuware/icons-font-command.git"
+  },
+  "dependencies": {
+    "svg2ttf": "^5.0.0",
+    "svgicons2svgfont": "^9.1.1",
+    "ttf2eot": "^2.0.0",
+    "ttf2woff": "^2.0.1",
+    "wawoff2": "^1.0.2"
+  },
+  "devDependencies": {
+    "svgo": "^1.3.2"
+  },
+  "keywords": [
+    "svg",
+    "woff",
+    "eot",
+    "icon",
+    "font",
+    "customization"
+  ],
+  "author": "uuware@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/uuware/icons-font-command/issues"
+  },
+  "homepage": "https://github.com/uuware/icons-font-command#readme"
+}
