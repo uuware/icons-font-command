@@ -1,6 +1,6 @@
 {
   "name": "icons-font-command",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "description": "Sub project of icons-font-customization, a collection of over 33,000 high-quality free svg icons and tools for generating customized icon font. All icons are completely free for personal or business requirements.",
   "main": "src/index.js",
   "preferGlobal": true,
@@ -24,8 +24,7 @@
     "wawoff2": "^1.0.2",
     "svgo": "^1.3.2"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "keywords": [
     "svg",
     "woff",
