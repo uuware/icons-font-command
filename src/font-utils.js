@@ -14,7 +14,7 @@ exports.FontUtils = class FontUtils {
                 iconsRoot = customizationPath;
                 console.error(`Retrieve icons locally form ${customizationPath}`);
             } else {
-                iconsRoot = 'https://raw.githubusercontent.com/uuware/icons-font-command/dist/svgs/';
+                iconsRoot = 'https://raw.githubusercontent.com/uuware/icons-font-customization/main/dist/svgs/';
             }
         }
         if (iconsRoot.indexOf('://') < 0) {
@@ -41,6 +41,9 @@ exports.FontUtils = class FontUtils {
             return;
         }
 
+        // promise for waiting until streamSvg finished
+        var wrapperPromise = Utils.wrapperPromise();
+    
         var stream = require('stream');
         var SVGIcons2SVGFontStream = require('svgicons2svgfont');
         var fontStream = new SVGIcons2SVGFontStream({
@@ -60,7 +63,8 @@ exports.FontUtils = class FontUtils {
             }
         });
         streamSvg.on('finish', () => {
-            this.generateFontSub(targetPath, jsonCfg, Buffer.concat(svgBuffer), cssBuffer.join(''), htmlBuffer.join(''));
+            // notice to continue
+            wrapperPromise.resolve();
         });
 
         // Output to streamSvg
@@ -133,6 +137,10 @@ code: &lt;span class="ifc-box"&gt;&lt;i class="ifc-icon ${name}"&gt;&lt;/i&gt;&l
 
         // Do not forget to end the stream
         fontStream.end();
+
+        // waiting until streamSvg finished
+        await wrapperPromise.promise;
+        await this.generateFontSub(targetPath, jsonCfg, Buffer.concat(svgBuffer), cssBuffer.join(''), htmlBuffer.join(''));
     }
 
     static async getFileContent(filePath, isRemote) {
@@ -164,7 +172,7 @@ code: &lt;span class="ifc-box"&gt;&lt;i class="ifc-icon ${name}"&gt;&lt;/i&gt;&l
         return {};
     }
 
-    static generateFontSub(targetPath, jsonCfg, svgBuffer, cssText, htmlText) {
+    static async generateFontSub(targetPath, jsonCfg, svgBuffer, cssText, htmlText) {
         var t = '?t=' + (Date.now() % 1000000);
 
         var svg2ttf = require('svg2ttf');
@@ -183,7 +191,7 @@ code: &lt;span class="ifc-box"&gt;&lt;i class="ifc-icon ${name}"&gt;&lt;/i&gt;&l
             var wawoff2 = require('wawoff2');
             var outputPathWoff2 = Path.resolve(targetPath, jsonCfg.outputName + '.woff2');
             // src - Buffer or Uint8Array
-            wawoff2.compress(ttf.buffer).then(out => {
+            await wawoff2.compress(ttf.buffer).then(out => {
                 Fs.writeFileSync(outputPathWoff2, out);
             });
             if (cssSrc !== '') { cssSrc += ',\n    '; }

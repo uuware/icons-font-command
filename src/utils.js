@@ -27,6 +27,28 @@ exports.Utils = class Utils {
         return options;
     }
 
+    /*
+    sample for resolving from outside:
+    var wrapperPromise = Utils.wrapperPromise();
+    setTimeout(() => {
+        // resolve from outside
+        wrapperPromise.resolve();
+    }, 1000);
+    await wrapperPromise.promise;
+    */
+    static wrapperPromise() {
+        var wrapper = {
+            promise: null,
+            resolve: null,
+            reject: null
+        };
+        wrapper.promise = new Promise((resolve, reject) => {
+            wrapper.resolve = resolve;
+            wrapper.reject = reject;
+        });
+        return wrapper;
+    }
+
     static fSize(fPath) {
         //var fs = require("fs");
         try {

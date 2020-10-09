@@ -16,11 +16,12 @@ var { MaintainIcons } = require('./maintain/maintain-icons');
 class IconsFontLite {
 
     // called from command line interface
-    static cmd() {
+    static async cmd() {
         var cmdMap = Utils.getCmdMap();
         // Optimize icons and create sample fonts for icons-font-customization project
         if (cmdMap['--maintain']) {
-            MaintainIcons.update();
+            await MaintainIcons.update();
+            process.exit();
             return;
         }
         if (cmdMap['--copyconfig']) {
@@ -47,8 +48,11 @@ class IconsFontLite {
         this.generateFont(cmdMap);
     }
 
-    static generateFont(cmdMap) {
-        console.log(`${'*'.repeat(40)}\nGenerate icon font:\nicons-font-command --config config-file-path\n${'*'.repeat(40)}`);
+    static async generateFont(cmdMap) {
+        console.log(`${'*'.repeat(40)}
+Generate icon font:\n\ticons-font-command --config config-file-path
+Copy default configuration file:\n\ticons-font-command --copyconfig
+${'*'.repeat(40)}`);
 
         // the path of config file should be relative to pwd
         var cfgPath = cmdMap['--config'] || 'icons-font.config.js';
@@ -67,7 +71,8 @@ class IconsFontLite {
             console.log(`"icons" are not defined in config file: ${cfgPath}`);
             return;
         }
-        FontUtils.generateFont(jsonCfg);
+        await FontUtils.generateFont(jsonCfg);
+        process.exit();
     }
 }
 

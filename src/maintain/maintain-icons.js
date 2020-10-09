@@ -27,6 +27,9 @@ exports.MaintainIcons = class MaintainIcons {
             return;
         }
 
+        // promise for waiting until streamSvg finished
+        var wrapperPromise = Utils.wrapperPromise();
+
         console.log(`Started to optimize icons and create sample html at: ${distPath}`);
         var stream = require('stream');
         var SVGIcons2SVGFontStream = require('svgicons2svgfont');
@@ -49,7 +52,8 @@ exports.MaintainIcons = class MaintainIcons {
             }
         });
         streamSvg.on('finish', () => {
-            this.outputFontFile(customizationPath);
+            // notice to continue
+            wrapperPromise.resolve();
         });
         fontStream.pipe(streamSvg).on('error', err => {
             console.log('streamSvg error', err);
@@ -81,6 +85,10 @@ exports.MaintainIcons = class MaintainIcons {
         console.log(`populated ${this.hub.index - START_CODE} icons`);
         // Do not forget to end the stream
         fontStream.end();
+
+        // waiting until streamSvg finished
+        await wrapperPromise.promise;
+        this.outputFontFile(customizationPath);
     }
 
     // optimize icon and filename
