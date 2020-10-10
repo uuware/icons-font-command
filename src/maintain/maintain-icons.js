@@ -15,11 +15,16 @@ exports.MaintainIcons = class MaintainIcons {
     // save processing data
     static hub = {};
     static async update() {
-        // find icons repertory: icons-font-customization project
+        // find icons repertory: icons-font-customization project, whether is at same folder?
         var customizationPath = Path.resolve(__dirname, '../../../icons-font-customization/');
         if (!Utils.dExist(customizationPath)) {
-            console.error(`This project ("icons-font-command") should be under same folder with "icons-font-customization"`);
-            return;
+            // whether is under icons-font-customization?
+            if (Utils.fExist(Path.resolve(__dirname, '../../../../package.json')) && Utils.dExist(Path.resolve(__dirname, '../../../../dist/svgs/'))) {
+                customizationPath = Path.resolve(__dirname, '../../../../');
+            } else {
+                console.error(`Couldn't find project "icons-font-customization"`);
+                return;
+            }
         }
         var distPath = Path.resolve(customizationPath, 'dist/svgs') + Path.sep;
         if (!Utils.dExist(distPath)) {

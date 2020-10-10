@@ -8,5 +8,5 @@ license: MIT
 */
 
 //Command Line Interface
-var IconsFontLite = require('../src/index');
+var { IconsFontLite } = require('../src/index');
 IconsFontLite.cmd();

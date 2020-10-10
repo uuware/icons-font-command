@@ -76,6 +76,6 @@ ${'*'.repeat(40)}`);
     }
 }
 
-module.exports = IconsFontLite;
+module.exports = { IconsFontLite, Utils };
 // Offer ES module interop compatibility.
 module.exports.default = IconsFontLite;
