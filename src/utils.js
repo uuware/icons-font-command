@@ -295,4 +295,15 @@ exports.Utils = class Utils {
             req.end();
         });
     }
+
+    static escapeHtml(html) {
+        return html.replace(/[&<>'"]/g,
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag]));
+    }
 }

@@ -184,11 +184,11 @@ exports.MaintainIcons = class MaintainIcons {
         // icons' group for one group (category folder)
         this.hub.list.push(`"${id}":{preName:'at',sub:{`);
         var oneGroup = `\n<div class="icon-group hide" id="${id}">
-<div class="info"><label class="name"><input type="checkbox" title="show or hide icons" onclick="onGroup('${id}')">${json.Name}</label>
+<div class="info"><label class="name"><input type="checkbox" title="show or hide icons" onclick="onGroup('${id}')">${Utils.escapeHtml(json.Name)}</label>
 Source: <a target="_blank" href="${json.Source}">visit</a>, 
 License: <span class="license"><a target="_blank" href="${json['License Link']}">${json.License}${json['Copy License'] ? ' (Copy License File)' : ''}</a></span>
 </div>
-<div class="icons">\n<div class="about">${json.About}</div>\n
+<div class="icons">\n<div class="about">${Utils.escapeHtml(json.About)}</div>\n
 `;
         for (var i = 0, len = subFiles.length; i < len; i++) {
             var subName = subFiles[i];
