@@ -82,7 +82,7 @@ exports.MaintainIcons = class MaintainIcons {
         var regex = new RegExp('\<\!-- REMOVE-S --\>[\\s\\S]*?\<\!-- REMOVE-E --\>', 'gm');
         html = html.replace(regex, '');
 
-        html = html.replace('[#ICONS-LIST#]', output);
+        html = html.replace('<!-- ICONS-LIST -->', output);
         html = html.replace('/*ICONS-JSON*/', iconsJSON);
         var outputPath = Path.resolve(customizationPath, 'dist/index.html');
         Fs.writeFileSync(outputPath, html);
@@ -183,7 +183,7 @@ exports.MaintainIcons = class MaintainIcons {
 
         // icons' group for one group (category folder)
         this.hub.list.push(`"${id}":{preName:'at',sub:{`);
-        var oneGroup = `\n<div class="icon-group hide" id="${id}">
+        var oneGroup = `\n<div class="icon-group close" id="${id}">
 <div class="info"><label class="name"><input type="checkbox" title="show or hide icons" onclick="onGroup('${id}')">${Utils.escapeHtml(json.Name)}</label>
 Source: <a target="_blank" href="${json.Source}">visit</a>, 
 License: <span class="license"><a target="_blank" href="${json['License Link']}">${json.License}${json['Copy License'] ? ' (Copy License File)' : ''}</a></span>

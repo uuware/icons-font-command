@@ -48,6 +48,12 @@ class IconsFontLite {
         this.generateFont(cmdMap);
     }
 
+    static getDefaultConfig() {
+        var cfgPathSrc = Path.resolve(__dirname, '../icons-font.config.js');
+        var jsonCfg = require(cfgPathSrc);
+        return jsonCfg;
+    }
+
     static async generateFont(cmdMap) {
         console.log(`${'*'.repeat(40)}
 Generate icon font:\n\ticons-font-command --config config-file-path
@@ -55,24 +61,30 @@ Copy default configuration file:\n\ticons-font-command --copyconfig
 ${'*'.repeat(40)}`);
 
         // the path of config file should be relative to pwd
-        var cfgPath = cmdMap['--config'] || 'icons-font.config.js';
-        if (!cfgPath.startsWith('/')) {
-            var cwd = process.cwd();
-            cfgPath = Path.resolve(cwd, cfgPath);
+        var jsonCfg = cmdMap['--config'];
+        if (typeof(jsonCfg) !== 'object') {
+            var cfgPath = cmdMap['--config'] || 'icons-font.config.js';
+            if (!cfgPath.startsWith('/')) {
+                var cwd = process.cwd();
+                cfgPath = Path.resolve(cwd, cfgPath);
+            }
+            if (!Utils.fExist(cfgPath)) {
+                console.log(`Can't find config file: ${cfgPath}`);
+                return;
+            }
+    
+            console.log(`Import configuration from: ${cfgPath}`);
+            jsonCfg = require(cfgPath);
         }
-        if (!Utils.fExist(cfgPath)) {
-            console.log(`Can't find config file: ${cfgPath}`);
-            return;
-        }
-
-        console.log(`Import configuration from: ${cfgPath}`);
-        var jsonCfg = require(cfgPath);
         if (!jsonCfg || !jsonCfg.icons || jsonCfg.icons.length < 1) {
             console.log(`"icons" are not defined in config file: ${cfgPath}`);
             return;
         }
         await FontUtils.generateFont(jsonCfg);
-        process.exit();
+        if (!jsonCfg.noExit && !cmdMap['--noexit']) {
+            process.exit();
+        }
+        return true;
     }
 }
 

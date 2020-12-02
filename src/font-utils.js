@@ -141,6 +141,7 @@ code: &lt;span class="ifc-box"&gt;&lt;i class="ifc-icon ${name}"&gt;&lt;/i&gt;&l
         // waiting until streamSvg finished
         await wrapperPromise.promise;
         await this.generateFontSub(targetPath, jsonCfg, Buffer.concat(svgBuffer), cssBuffer.join(''), htmlBuffer.join(''));
+        return true;
     }
 
     static async getFileContent(filePath, isRemote) {
