@@ -184,7 +184,7 @@ exports.MaintainIcons = class MaintainIcons {
         // icons' group for one group (category folder)
         this.hub.list.push(`"${id}":{preName:'at',sub:{`);
         var oneGroup = `\n<div class="icon-group close" id="${id}">
-<div class="info"><label class="name"><input type="checkbox" title="show or hide icons" onclick="onGroup('${id}')">${Utils.escapeHtml(json.Name)}</label>
+<div class="info"><label class="name"><input type="checkbox" title="show or hide icons" onclick="onGroup('${id}')">${Utils.escapeHtml(json.Name)}</label>,
 Source: <a target="_blank" href="${json.Source}">visit</a>, 
 License: <span class="license"><a target="_blank" href="${json['License Link']}">${json.License}${json['Copy License'] ? ' (Copy License File)' : ''}</a></span>
 </div>
