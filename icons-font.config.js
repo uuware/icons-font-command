@@ -2,21 +2,18 @@
 Define icons for generating font
 
 Suggestions:
-1, use WOFF2 for major browsers except IE;
+1, nowadays using WOFF2 for major browsers except IE should be sufficient;
 Or: 2, use WOFF for major browsers and IE 9~, Edge 12~
 Or: 3, combine WOFF2 with TTF for IE8~
   All 1, 2, 3 needs this code in HTML: `<i class="ifc-icon icon_name"></i>`
-Or: 4, IE6-7 requires alternate CSS: Because '.css_class_name:before (not double-colon){ content: "" }'
-  in css is only supported from IE8, so it needs different code in html: <i class="icon ifc-icon">&#x66;(icons code)</i>
+Or: 4, IE6-7 requires a different CSS: <i class="icon ifc-icon">&#x66;(icons code)</i> (because '.css_class_name:before (not double-colon){ content: "" }'
+  in css is only supported from IE8).
 */
 
 var cssTemplate = `
 /*font-face*/
 
 .ifc-box {
-  display: -webkit-inline-flex;
-  display: -moz-inline-box;
-  display: -ms-inline-flexbox;
   display: inline-flex;
   position: relative;
   border-radius: 3px;
@@ -91,11 +88,13 @@ module.exports = {
     /* download svg from any other websites */
     { path: 'https://raw.githubusercontent.com/fontello/awesome-uni.font/29d4e3ff028fc850a21b5eaafde0a83f22f59cf1/src/svg/amazon.svg', name: 'fa-amazon' },
     { path: 'https://raw.githubusercontent.com/fontello/awesome-uni.font/29d4e3ff028fc850a21b5eaafde0a83f22f59cf1/src/svg/adjust.svg', name: 'fa-adjust' },
+    /* if it's local files (not from icons-font-customization), you can add iconsRoot to locate them */
+    // { path: '../src/asset/icons/pin.svg', name: 'my-pin', iconsRoot: __dirname },
   ],
   fontType: {
     'woff2': true,
-    'woff': true,
-    'ttf': true,
+    'woff': false,
+    'ttf': false,
     'eot': false,
     'svg': false,
   },

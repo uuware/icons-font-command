@@ -129,9 +129,9 @@ exports.FontUtils = class FontUtils {
 
             var unicode16 = unicode.toString(16);
             cssBuffer.push(`.${name}:before { content: "\\${unicode16}"; }\n`);
-            htmlBuffer.push(`<div>Major: </span><span class="ifc-box"><i class="ifc-icon ${name}"></i></span>, 
-IE 6-7: <span class="ifc-box"><i class="ifc-icon">&#x${unicode16};</i></span>, 
-code: &lt;span class="ifc-box"&gt;&lt;i class="ifc-icon ${name}"&gt;&lt;/i&gt;&lt;/span&gt;, from: ${firstFolder}</div>\n`);
+            htmlBuffer.push(`<div>Major (&lt;span class=&quot;ifc-box&quot;&gt;&lt;i class=&quot;ifc-icon fa-apple&quot;&gt;&lt;/i&gt;&lt;/span&gt;): </span><span class="ifc-box"><i class="ifc-icon ${name}"></i></span>, 
+or major and IE 6-7 (&lt;span class=&quot;ifc-box&quot;&gt;&lt;i class=&quot;ifc-icon&quot;&gt;&amp;#x2711;&lt;/i&gt;&lt;/span&gt;): <span class="ifc-box"><i class="ifc-icon">&#x${unicode16};</i></span>, 
+from: ${firstFolder}</div>\n`);
         }
         console.log(`populated ${startChar - jsonCfg.startChar} icons, at: ${targetPath}`);
 
