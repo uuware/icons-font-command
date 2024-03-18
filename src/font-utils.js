@@ -2,6 +2,13 @@ var Fs = require('fs');
 var Path = require('path');
 var { Utils } = require('./utils');
 
+const template = `
+<div><span class="ifc-box"><i class="ifc-icon [#name#]"></i></span>
+	HTML code: <span class="code">
+		With CSS: &lt;span class=&quot;ifc-box&quot;&gt;&lt;i class=&quot;ifc-icon [#name#]&quot;&gt;&lt;/i&gt;&lt;/span&gt; (<span class='cp' onclick='navigator.clipboard.writeText("&lt;style&gt;.[#name#]:before { content: \\"\\\\[#code#]\\"; }&lt;/style&gt;\\n<span class=\\"ifc-box\\"><i class=\\"ifc-icon [#name#]\\"></i></span>")'>copy</span>)<br>
+		Without CSS: &lt;span class=&quot;ifc-box&quot;&gt;&lt;i class=&quot;ifc-icon&quot;&gt;&amp;#x[#code#];&lt;/i&gt;&lt;/span&gt; (<span class='cp' onclick='navigator.clipboard.writeText("<span class=\\"ifc-box\\"><i class=\\"ifc-icon\\">"+"&"+"#x[#code#];</i></span>")'>copy</span>)
+	</span> From: [#from#]</div>
+`;
 exports.FontUtils = class FontUtils {
     static async generateFont(jsonCfg) {
         var cwd = process.cwd();
@@ -129,9 +136,7 @@ exports.FontUtils = class FontUtils {
 
             var unicode16 = unicode.toString(16);
             cssBuffer.push(`.${name}:before { content: "\\${unicode16}"; }\n`);
-            htmlBuffer.push(`<div>Major (&lt;span class=&quot;ifc-box&quot;&gt;&lt;i class=&quot;ifc-icon fa-apple&quot;&gt;&lt;/i&gt;&lt;/span&gt;): </span><span class="ifc-box"><i class="ifc-icon ${name}"></i></span>, 
-or major and IE 6-7 (&lt;span class=&quot;ifc-box&quot;&gt;&lt;i class=&quot;ifc-icon&quot;&gt;&amp;#x2711;&lt;/i&gt;&lt;/span&gt;): <span class="ifc-box"><i class="ifc-icon">&#x${unicode16};</i></span>, 
-from: ${firstFolder}</div>\n`);
+            htmlBuffer.push(template.replace(/\[#name#\]/g, name).replace(/\[#code#\]/g, unicode16).replace(/\[#from#\]/g, firstFolder));
         }
         console.log(`populated ${startChar - jsonCfg.startChar} icons, at: ${targetPath}`);
 
@@ -192,9 +197,8 @@ from: ${firstFolder}</div>\n`);
             var wawoff2 = require('wawoff2');
             var outputPathWoff2 = Path.resolve(targetPath, jsonCfg.outputName + '.woff2');
             // src - Buffer or Uint8Array
-            await wawoff2.compress(ttf.buffer).then(out => {
-                Fs.writeFileSync(outputPathWoff2, out);
-            });
+            const outWoff2 = await wawoff2.compress(ttf.buffer);
+            Fs.writeFileSync(outputPathWoff2, outWoff2);
             if (cssSrc !== '') { cssSrc += ',\n    '; }
             cssSrc += `url('${jsonCfg.outputName}.woff2${t}') format('woff2')`;
         }

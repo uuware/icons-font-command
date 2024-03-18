@@ -7,15 +7,21 @@ var Path = require('path');
 var { SvgOptimize } = require('./svg-optimize');
 var { Utils } = require('../utils');
 var Fs = require('fs');
+var DOMParser = require('@xmldom/xmldom').DOMParser;
 
+// !! the font file can't contain more than 30K a bit more icons
 // the starting unicode for icons in font
 var START_CODE = 10000;
+var MAX_CODE = 30000;
+var isChecking = false;
+var checkingLastFile = '';
 
 exports.MaintainIcons = class MaintainIcons {
     // save processing data
     static hub = {};
+
     static async update() {
-        // find icons repertory: icons-font-customization project, whether is at same folder?
+        // find icons repertory: icons-font-customization project, whether is at the same folder?
         var customizationPath = Path.resolve(__dirname, '../../../icons-font-customization/');
         if (!Utils.dExist(customizationPath)) {
             // whether is under icons-font-customization?
@@ -32,45 +38,26 @@ exports.MaintainIcons = class MaintainIcons {
             return;
         }
 
-        // promise for waiting until streamSvg finished
-        var wrapperPromise = Utils.wrapperPromise();
-
         console.log(`Started to optimize icons and create sample html at: ${distPath}`);
-        var stream = require('stream');
-        var SVGIcons2SVGFontStream = require('svgicons2svgfont');
-        var fontStream = new SVGIcons2SVGFontStream({
-            fontName: 'i-font',
-            fontHeight: 1024,
-            normalize: true,
-        }).on('error', err => {
-            console.log('SVGIcons2SVGFontStream error', err);
-        });
 
-        this.hub.index = START_CODE - 1;
+        this.hub.index = -1;
+        this.hub.fileIndex = 0;
         this.hub.svg = [];
         this.hub.list = [];
         this.hub.list.push('{');
-        var streamSvg = new stream.Writable({
-            write: function (chunk, encoding, next) {
-                MaintainIcons.hub.svg.push(chunk);
-                next();
-            }
-        });
-        streamSvg.on('finish', () => {
-            // notice to continue
-            wrapperPromise.resolve();
-        });
-        fontStream.pipe(streamSvg).on('error', err => {
-            console.log('streamSvg error', err);
-        });
-        this.hub.fontStream = fontStream;
+        this.hub.countGroup = 0;
+        this.hub.countAll = 0;
+        this.hub.customizationPath = customizationPath;
+        await this.switchFontStream(false);
 
         // html for icons to be replaced into sample page
         var output = '';
         var list = Utils.fList(distPath, false, true);
         for (var i = 0, len = list.length; i < len; i++) {
+            this.hub.countGroup = 0;
             var oneGroup = await this.updateOneGroup(distPath, list[i]);
             output += oneGroup;
+            this.hub.countAll += this.hub.countGroup;
         }
 
         // use plain text to save icons data
@@ -82,42 +69,90 @@ exports.MaintainIcons = class MaintainIcons {
         var regex = new RegExp('\<\!-- REMOVE-S --\>[\\s\\S]*?\<\!-- REMOVE-E --\>', 'gm');
         html = html.replace(regex, '');
 
-        html = html.replace('<!-- ICONS-LIST -->', output);
-        html = html.replace('/*ICONS-JSON*/', iconsJSON);
+        html = html
+            .replace('<!-- ICONS-LIST -->', output)
+            .replace('/*ICONS-JSON*/', iconsJSON)
+            .replace('/*MAX_CODE*/', `${MAX_CODE}; //`)
+            .replace('[#COUNT-ALL#]', this.hub.countAll.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,"));
         var outputPath = Path.resolve(customizationPath, 'dist/index.html');
         Fs.writeFileSync(outputPath, html);
 
-        console.log(`populated ${this.hub.index - START_CODE} icons`);
-        // Do not forget to end the stream
-        fontStream.end();
+        console.log(`populated ${this.hub.countAll} icons`);
 
         // waiting until streamSvg finished
-        await wrapperPromise.promise;
-        this.outputFontFile(customizationPath);
+        await this.switchFontStream(true);
+    }
+
+    static async check() {
+        isChecking = true;
+        MAX_CODE = 1;
+        await this.update();
+    }
+
+    static async switchFontStream(isLast) {
+        if (this.hub.fontStream) {
+            // close previous font file
+            console.log('Create font file: ' + this.hub.fileIndex);
+            this.hub.fontStream.end();
+            await this.hub.wrapperPromise.promise;
+            await this.outputFontFile(this.hub.customizationPath, this.hub.fileIndex);
+            this.hub.fileIndex++;
+        }
+        if (isLast === true) {
+            return;
+        }
+
+        // promise for waiting until streamSvg finished
+        this.hub.wrapperPromise = Utils.wrapperPromise();
+
+        var stream = require('stream');
+        var SVGIcons2SVGFontStream = require('svgicons2svgfont');
+        var fontStream = new SVGIcons2SVGFontStream({
+            fontName: 'i-font' + this.hub.fileIndex,
+            fontHeight: 1024,
+            normalize: true,
+        }).on('error', err => {
+            console.log('SVGIcons2SVGFontStream error', err);
+            isChecking && Utils.fRemove(checkingLastFile);
+            isChecking && console.log(`Removed file: ${checkingLastFile}`);
+        });
+
+        var streamSvg = new stream.Writable({
+            write: (chunk, encoding, next) => {
+                this.hub.svg.push(chunk);
+                next();
+            }
+        });
+        streamSvg.on('finish', () => {
+            // notice to continue
+            this.hub.wrapperPromise.resolve();
+        });
+        fontStream.pipe(streamSvg).on('error', err => {
+            console.log('streamSvg error', err);
+        });
+        this.hub.fontStream = fontStream;
     }
 
     // optimize icon and filename
     static async optimizeIcon(parentPath, iconPath, iconName, iconOptimizedName) {
-        var newContent = '';
-        var fContent = Utils.fRead(iconPath);
+        var fContent = Utils.fRead(iconPath).toString();
         try {
-            if (iconOptimizedName !== iconName) {
-                Utils.fRemove(iconPath);
-            }
-            // if run twice, the icon can reduce a little size again
+            // if run twice, the icon can reduce a little bit size again
             var result = await SvgOptimize.optimize(fContent);
-            newContent = (result && result.data) || fContent;
-            if (newContent != fContent) {
-                console.log(`Optimized ${fContent.length} to ${newContent.length} for ${parentPath}${iconName}`);
-            }
-            if (newContent != fContent || iconOptimizedName !== iconName) {
+            var newContent = (result && result.data) || fContent;
+            // if (newContent != fContent) {
+            //     console.log(`Optimized ${fContent.length} to ${newContent.length} for ${parentPath}${iconName}`);
+            // }
+            if (iconOptimizedName !== iconName) { //newContent != fContent || 
+                Utils.fRemove(iconPath);
                 iconPath = Path.resolve(parentPath, iconOptimizedName);
-                Utils.fWrite(iconPath, newContent, false, true);
+                Utils.fWrite(iconPath, fContent, false, true);
             }
+            return newContent;
         } catch (err) {
-            console.log(`Error while processing ${parentPath}${iconName}`, err);
+            console.log(`Error while optimizeIcon ${parentPath}${iconName}`, err);
+            return '';
         }
-        return newContent;
     }
 
     static async updateFolder(parentPath, parentSrc, iList) {
@@ -131,14 +166,36 @@ exports.MaintainIcons = class MaintainIcons {
             var iconOptimizedName = listFiles[i3].replace(/[ "'\]\;\>\}]/g, '').replace(/[\#\[\<\{\&\$]/g, '-').replace(/--/g, '-').toLocaleLowerCase();
             var iconName2 = iconOptimizedName.substring(0, iconOptimizedName.length - 4);
             try {
+                checkingLastFile = iconPath;
                 var newContent = await this.optimizeIcon(parentPath, iconPath, listFiles[i3], iconOptimizedName);
+                if (!newContent) {
+                    isChecking && Utils.fRemove(checkingLastFile);
+                    isChecking && console.log(`Removed file: ${checkingLastFile}`);
+                    console.error(`Skip for error: ${parentSrc}${listFiles[i3]}`);
+                    continue;
+                }
+                var doc = (new DOMParser()).parseFromString(newContent, 'application/xml');
+                if (!doc) {
+                    isChecking && Utils.fRemove(checkingLastFile);
+                    isChecking && console.log(`Removed file: ${checkingLastFile}`);
+                    console.error(`Skip for error: ${parentSrc}${listFiles[i3]}`);
+                    continue;
+                }
+
+                isChecking && console.log(`index: ${this.hub.index}, iconPath: ${iconPath}`);
                 this.hub.index++;
-                var name = 'i' + this.hub.index;
+                if (this.hub.index - this.hub.fileIndex * MAX_CODE >= MAX_CODE) {
+                    // create a new font file
+                    await this.switchFontStream(false);
+                }
+                const fontCodeIndex = START_CODE + this.hub.index - this.hub.fileIndex * MAX_CODE;
+                // console.log(`this.hub.index: ${this.hub.index}, fontCodeIndex: ${fontCodeIndex}`)
+                var name = 'i' + fontCodeIndex;
                 var Readable = require('stream').Readable;
                 var glyph = Readable.from([newContent])
                 glyph.metadata = {
                     name: name,
-                    unicode: [String.fromCharCode(this.hub.index)],
+                    unicode: [String.fromCharCode(fontCodeIndex)],
                 };
                 this.hub.fontStream.write(glyph);
                 // code for css is removed, then create css dynamically in sample html
@@ -146,8 +203,9 @@ exports.MaintainIcons = class MaintainIcons {
                 // plain text is less than JSON code
                 var oneIcon = `{c:${this.hub.index},n:'${iconName2}',l:${newContent.length}${src === iconName2 + '.svg' ? '' : ",s:'" + src + "'"}},`;
                 iList.push(oneIcon);
+                this.hub.countGroup++;
             } catch (err) {
-                console.log(`Error while processing ${parentSrc}${listFiles[i3]}`, err);
+                console.log(`Error while update ${parentSrc}${listFiles[i3]}`, err);
             }
         }
 
@@ -160,16 +218,30 @@ exports.MaintainIcons = class MaintainIcons {
     }
 
     // write stream to font file
-    static outputFontFile(customizationPath) {
-        var svgBuffer = Buffer.concat(MaintainIcons.hub.svg);
+    static async outputFontFile(customizationPath, fileIndex) {
+        var svgBuffer = Buffer.concat(this.hub.svg);
+        this.hub.svg = [];
         var svg2ttf = require('svg2ttf');
-        var ttf = svg2ttf(svgBuffer.toString(), {});
+        var ttf;
+        try {
+            ttf = svg2ttf(svgBuffer.toString(), {});
+        } catch (error) {
+            console.log(`Error while svg2ttf, fileIndex: ${fileIndex}`, error);
+            isChecking && Utils.fRemove(checkingLastFile);
+            isChecking && console.log(`Removed file: ${checkingLastFile}`);
+        }
 
-        var ttf2woff = require('ttf2woff');
-        var outputPathWoff = Path.resolve(customizationPath, 'dist/index.woff');
-        var woff = ttf2woff(ttf.buffer, {});
-        Fs.writeFileSync(outputPathWoff, woff.buffer);
-        console.log(`Wrote woff: ${woff.buffer.length}`);
+        // var ttf2woff = require('ttf2woff');
+        // var outputPathWoff = Path.resolve(customizationPath, 'dist/index.woff');
+        // var woff = ttf2woff(ttf.buffer, {});
+        // Fs.writeFileSync(outputPathWoff, woff.buffer);
+        // console.log(`Wrote woff: ${woff.buffer.length}`);
+
+        var wawoff2 = require('wawoff2');
+        var outputPathWoff2 = Path.resolve(customizationPath, `dist/index${fileIndex}.woff2`);
+        const outWoff2 = await wawoff2.compress(ttf.buffer);
+        !isChecking && Fs.writeFileSync(outputPathWoff2, outWoff2);
+        console.log(`Wrote woff2: ${outputPathWoff2}`);
     }
 
     static async updateOneGroup(distPath, folderName) {
@@ -183,10 +255,11 @@ exports.MaintainIcons = class MaintainIcons {
 
         // icons' group for one group (category folder)
         this.hub.list.push(`"${id}":{preName:'${json.PreName}',sub:{`);
+        // ${json['Copy License'] ? ' (Copy License File)' : ''}
         var oneGroup = `\n<div class="icon-group close" id="${id}">
-<div class="info"><label class="name"><input type="checkbox" title="show or hide icons" onclick="onGroup('${id}')">${Utils.escapeHtml(json.Name)}</label>,
+<div class="info"><label class="name"><input type="checkbox" title="show or hide icons" onclick="onGroup('${id}')">${Utils.escapeHtml(json.Name)} (count: [#COUNT#])</label>,
 Source: <a target="_blank" href="${json.Source}">visit</a>, 
-License: <span class="license"><a target="_blank" href="${json['License Link']}">${json.License}${json['Copy License'] ? ' (Copy License File)' : ''}</a></span>
+License: <span class="license"><a target="_blank" href="${json['License Link']}">${json.License}</a></span>
 </div>
 <div class="icons">\n<div class="about">${Utils.escapeHtml(json.About)}</div>\n
 `;
@@ -202,6 +275,6 @@ License: <span class="license"><a target="_blank" href="${json['License Link']}"
         }
         oneGroup += `</div>\n</div>\n\n`;
         this.hub.list.push('}},');
-        return oneGroup;
+        return oneGroup.replace('[#COUNT#]', this.hub.countGroup.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,"));
     }
 }

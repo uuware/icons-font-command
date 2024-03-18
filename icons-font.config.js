@@ -4,10 +4,7 @@ Define icons for generating font
 Suggestions:
 1, nowadays using WOFF2 for major browsers except IE should be sufficient;
 Or: 2, use WOFF for major browsers and IE 9~, Edge 12~
-Or: 3, combine WOFF2 with TTF for IE8~
-  All 1, 2, 3 needs this code in HTML: `<i class="ifc-icon icon_name"></i>`
-Or: 4, IE6-7 requires a different CSS: <i class="icon ifc-icon">&#x66;(icons code)</i> (because '.css_class_name:before (not double-colon){ content: "" }'
-  in css is only supported from IE8).
+  All 1, 2 need this code in HTML: `<i class="ifc-icon icon_name"></i>`
 */
 
 var cssTemplate = `
@@ -15,9 +12,7 @@ var cssTemplate = `
 
 .ifc-box {
   display: inline-flex;
-  position: relative;
   border-radius: 3px;
-  text-align: center;
   vertical-align: middle;
   border: solid 1px #00f;
   width: 40px;
@@ -26,20 +21,16 @@ var cssTemplate = `
   color: blue;
   margin: 5px;
 }
+.ifc-box:hover {
+  box-shadow: 0 0 2px 0 #3498db inset, 0 0 5px 1px #3498db;
+}
 
 .ifc-icon {
-  font-size: inherit;
-  display: inline-block;
   font-family: '#font-family#';
   font-style: normal;
   font-weight: 400;
-  font-variant: normal;
-  text-transform: none;
-  text-rendering: auto;
   line-height: 1em;
   vertical-align: middle;
-  text-align: center;
-  text-decoration: inherit;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   margin: auto;
@@ -67,6 +58,7 @@ var htmlTemplate = `
 <!DOCTYPE html><html><head>
 	<title>icons-font-customization sample</title>
 	<link rel="stylesheet" type="text/css" href="style.css">
+	<style>.cp {color: blue;cursor: pointer;}.code{display: inline-block;vertical-align: middle;}</style>
 </head><body><div class="sample">
 #icons-html#</div></body></html>
 `;

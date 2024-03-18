@@ -1,98 +1,70 @@
 exports.SvgOptimize = class SvgOptimize {
 
-    static instance() {
-        try {
-            // don't need this for electron and also it has error for require('SVGO'), so treat it as try ... catch
-            const Svgo = require('SVGO');
-            this.svgo = new Svgo({
-                plugins: [{
-                    cleanupAttrs: true,
-                }, {
-                    removeDoctype: true,
-                }, {
-                    removeXMLProcInst: true,
-                }, {
-                    removeComments: true,
-                }, {
-                    removeMetadata: true,
-                }, {
-                    removeTitle: true,
-                }, {
-                    removeDesc: true,
-                }, {
-                    removeUselessDefs: true,
-                }, {
-                    removeEditorsNSData: true,
-                }, {
-                    removeEmptyAttrs: true,
-                }, {
-                    removeHiddenElems: true,
-                }, {
-                    removeEmptyText: true,
-                }, {
-                    removeEmptyContainers: true,
-                }, {
-                    removeViewBox: false,
-                }, {
-                    cleanupEnableBackground: true,
-                }, {
-                    convertStyleToAttrs: true,
-                }, {
-                    convertColors: true,
-                }, {
-                    convertPathData: true,
-                }, {
-                    convertTransform: true,
-                }, {
-                    removeUnknownsAndDefaults: true,
-                }, {
-                    removeNonInheritableGroupAttrs: true,
-                }, {
-                    removeUselessStrokeAndFill: true,
-                }, {
-                    removeUnusedNS: true,
-                }, {
-                    cleanupIDs: true,
-                }, {
-                    cleanupNumericValues: true,
-                }, {
-                    moveElemsAttrsToGroup: true,
-                }, {
-                    moveGroupAttrsToElems: true,
-                }, {
-                    collapseGroups: true,
-                }, {
-                    removeRasterImages: false,
-                }, {
-                    mergePaths: true,
-                }, {
-                    convertShapeToPath: true,
-                }, {
-                    sortAttrs: true,
-                }, {
-                    removeDimensions: true,
-                }, {
-                    removeAttrs: { attrs: '(stroke|fill|id|baseProfile|overflow|class)' },
-                }, {
-                    convertEllipseToCircle: true,
-                }, {
-                    removeOffCanvasPaths: true,
-                    // }, {
-                    //     reusePaths: true,
-                }]
-            });
-        } catch (exp) {
-            console.log(exp);
-        }
-    }
-
+    static svgo = require('svgo');
     static async optimize(content) {
-        if (!this.svgo) {
-            this.svgo = this.instance();
-        }
-        if (!this.svgo) {
-            return;
-        }
-        return this.svgo.optimize(content);
+        const config = {
+            path: '',
+            multipass: true,
+            plugins: [
+                {
+                    name: 'preset-default',
+                    params: {
+                        overrides: {
+                            inlineStyles: false,
+                            removeViewBox: false,
+                            cleanupEnableBackground: false,
+                            removeHiddenElems: false,
+                            convertShapeToPath: false,
+                            moveElemsAttrsToGroup: false,
+                            moveGroupAttrsToElems: false,
+                            convertPathData: false,
+                        }
+                    }
+                },
+                'cleanupAttrs',
+                'removeDoctype',
+                'removeXMLProcInst',
+                'removeComments',
+                'removeMetadata',
+                'removeTitle',
+                'removeDesc',
+                'removeUselessDefs',
+                'removeEditorsNSData',
+                'removeEmptyAttrs',
+                'removeHiddenElems',
+                'removeEmptyText',
+                'removeEmptyContainers',
+                // removeViewBox: false,
+                'cleanupEnableBackground',
+                // convertStyleToAttrs: true,
+                'convertColors',
+                'convertPathData',
+                'convertTransform',
+                'removeUnknownsAndDefaults',
+                'removeNonInheritableGroupAttrs',
+                'removeUselessStrokeAndFill',
+                'removeUnusedNS',
+                // 'cleanupIDs',
+                'cleanupNumericValues',
+                'moveElemsAttrsToGroup',
+                'moveGroupAttrsToElems',
+                'collapseGroups',
+                // removeRasterImages: false,
+                'mergePaths',
+                'convertShapeToPath',
+                'convertEllipseToCircle',
+                'removeOffCanvasPaths',
+                'removeDimensions',
+                'removeOffCanvasPaths',
+                {
+                    name: 'removeAttrs',
+                    params: { attrs: '(stroke|id|baseProfile|overflow|class|fill)' } //fill
+                },
+                'convertStyleToAttrs',
+                'cleanupListOfValues',
+                'sortAttrs'
+            ],
+        };
+        return this.svgo.optimize(content, config);
     }
 }

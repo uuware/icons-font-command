@@ -24,6 +24,11 @@ class IconsFontLite {
             process.exit();
             return;
         }
+        if (cmdMap['--check']) {
+            await MaintainIcons.check();
+            process.exit();
+            return;
+        }
         if (cmdMap['--copyconfig']) {
             var cwd = process.cwd();
             var cfgPath = Path.resolve(cwd, 'icons-font.config.js');

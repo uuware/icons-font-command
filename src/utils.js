@@ -223,7 +223,7 @@ exports.Utils = class Utils {
     }
     static dRemove(dPath, recursive) {
         try {
-            Fs.rmdirSync(dPath, { recursive: recursive });
+            Fs.rmSync(dPath, { recursive: recursive });
             return true;
         } catch (err) {
         }

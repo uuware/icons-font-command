@@ -1,5 +1,12 @@
 # icons-font-command
-icons-font-command is a project to generate svg fonts, and it's used by icons-font-customization.
+A collection of over 78,000 high-quality free svg icons and tools for generating customized icon font. All icons are completely free for personal or business requirements.
+
+Open [See all icons](https://uuware.github.io/icons-font-customization/dist/), to view all icons. You can change the icons color, size and background color, or search icons by a name, or save selected results.
+
+You also can download PNG, JPG, ICO and Apple ICNS image files directly from online.
+
+
+icons-font-command is icons-font-customization's sub project containing scripts to generate fonts.
 
 icons-font-command project can be run separately and it gets svg icons remotely from icons-font-customization's github repository.
 
@@ -13,11 +20,11 @@ npm i icons-font-command --save-dev
 ```
 
 ## icons-font.config.js
-You need a config file to tell icons-font-command that what svg icons you want to generate.
+You need a config file to tell icons-font-command that what svg icons you want to use for generating the fonts.
 
 [A sample inside of this project](https://github.com/uuware/icons-font-command/blob/main/icons-font.config.js)
 
-[icons-font-customization](https://github.com/uuware/icons-font-customization) has a tool to help you choose SVGs from 33,000 icons easily. You jump to [online tool](https://uuware.github.io/icons-font-customization/dist/) and check on any icons set and click on icons to choose them. At the top-right corner there is a triangle icon, click it it will open a panel, and you can click "Populate Configuration" to population configurations.
+You can select icons on [online tool](https://uuware.github.io/icons-font-customization/dist/) and click the menu icon at the top-right corner to open a panel, then you can click "Populate Configuration" to population configurations.
 You copy those configurations and paste it to your icons-font.config.js, now you can generate your svg fonts.
 
 
@@ -56,9 +63,11 @@ You need to include "style.css" file to your web page or copy style.css's conten
 ---
 
 # icons-font-customization
-icons-font-customization is a collection of over 33,000 high-quality free svg icons and tools for generating customized icon font. All icons are completely free for personal or business requirements.
+icons-font-customization is a collection of over 75,000 high-quality free svg icons and tools for generating customized icon font.
+
 [See all icons](https://uuware.github.io/icons-font-customization/dist/)
 
+And also there is a Desktop version for for Windows, Linux, MacOS.
 
 All icons collected here are completely free for your personal or business requirements.<br>
 You can use this tool to combine / generate your own icon webfonts for your project from different sources.
